@@ -12,6 +12,7 @@ from watchdog.observers import Observer
 
 from injector import get_tab, get_gamepadui_tab
 from plugin import PluginWrapper
+from wsrouter import WSRouter
 
 class FileChangeHandler(RegexMatchingEventHandler):
     def __init__(self, queue, plugin_path) -> None:
@@ -74,9 +75,11 @@ class Loader:
             self.observer.schedule(self.watcher, self.plugin_path, recursive=True)
             self.observer.start()
             self.loop.create_task(self.enable_reload_wait())
-            
+
+        self.ws = WSRouter()
+
         server_instance.add_routes([
-            web.get("/socket", self.handle_ws),
+            web.get("/socket", self.ws.handle),
             web.get("/frontend/{path:.*}", self.handle_frontend_assets),
             web.get("/locales/{path:.*}", self.handle_frontend_locales),
             web.get("/plugins", self.get_plugins),
@@ -90,24 +93,6 @@ class Loader:
             web.get("/plugins/plugin_resource/{name}/{path:.+}", self.handle_sub_route),
             web.get("/steam_resource/{path:.+}", self.get_steam_resource)
         ])
-
-    async def handle_ws(self, request):
-        self.logger.debug('Websocket connection starting')
-        ws = aiohttp.web.WebSocketResponse()
-        await ws.prepare(request)
-        self.logger.debug('Websocket connection ready')
-
-        async for msg in ws:
-            self.logger.debug(msg)
-            if msg.type == aiohttp.WSMsgType.TEXT:
-                self.logger.debug(msg.data)
-                if msg.data == 'close':
-                    await ws.close()
-                else:
-                    await ws.send_str(msg.data + '/answer')
-
-        self.logger.debug('Websocket connection closed')
-        return ws
 
     async def enable_reload_wait(self):
         if self.live_reload:

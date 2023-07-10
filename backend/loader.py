@@ -91,15 +91,6 @@ class Loader:
             web.get("/steam_resource/{path:.+}", self.get_steam_resource)
         ])
 
-        ws.add_route("test", self.test_method)
-
-    async def test_method():
-        await sleep(2)
-
-        return {
-            "test data": True
-        }
-
     async def enable_reload_wait(self):
         if self.live_reload:
             await sleep(10)

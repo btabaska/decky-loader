@@ -35,6 +35,7 @@ import Toaster from './toaster';
 import { VerInfo, callUpdaterMethod } from './updater';
 import { getSetting, setSetting } from './utils/settings';
 import TranslationHelper, { TranslationClass } from './utils/TranslationHelper';
+import { WSRouter } from './wsrouter';
 
 const StorePage = lazy(() => import('./components/store/Store'));
 const SettingsPage = lazy(() => import('./components/settings'));
@@ -48,6 +49,8 @@ class PluginLoader extends Logger {
   private routerHook: RouterHook = new RouterHook();
   public toaster: Toaster = new Toaster();
   private deckyState: DeckyState = new DeckyState();
+
+  public ws: WSRouter = new WSRouter();
 
   public hiddenPluginsService = new HiddenPluginsService(this.deckyState);
   public notificationService = new NotificationService(this.deckyState);
@@ -103,9 +106,11 @@ class PluginLoader extends Logger {
 
     initFilepickerPatches();
 
-    this.getUserInfo();
+    this.ws.connect().then(() => {
+      this.getUserInfo();
 
-    this.updateVersion();
+      this.updateVersion();
+    });
   }
 
   public async getUserInfo() {

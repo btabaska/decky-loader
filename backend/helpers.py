@@ -8,7 +8,7 @@ from hashlib import sha256
 from io import BytesIO
 
 import certifi
-from aiohttp.web import Response, middleware
+from aiohttp.web import Request, Response, middleware
 from aiohttp import ClientSession
 import localplatform
 from customtypes import UserType
@@ -31,8 +31,8 @@ def get_csrf_token():
     return csrf_token
 
 @middleware
-async def csrf_middleware(request, handler):
-    if str(request.method) == "OPTIONS" or request.headers.get('Authentication') == csrf_token or str(request.rel_url) == "/auth/token" or str(request.rel_url).startswith("/plugins/load_main/") or str(request.rel_url).startswith("/static/") or str(request.rel_url).startswith("/legacy/") or str(request.rel_url).startswith("/steam_resource/") or str(request.rel_url).startswith("/frontend/") or assets_regex.match(str(request.rel_url)) or frontend_regex.match(str(request.rel_url)):
+async def csrf_middleware(request: Request, handler):
+    if str(request.method) == "OPTIONS" or request.headers.get('Authentication') == csrf_token or str(request.rel_url) == "/auth/token" or str(request.rel_url).startswith("/plugins/load_main/") or str(request.rel_url).startswith("/static/") or str(request.rel_url).startswith("/legacy/") or str(request.rel_url).startswith("/steam_resource/") or str(request.rel_url).startswith("/ws?") or str(request.rel_url).startswith("/frontend/") or assets_regex.match(str(request.rel_url)) or frontend_regex.match(str(request.rel_url)):
         return await handler(request)
     return Response(text='Forbidden', status='403')
 

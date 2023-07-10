@@ -1,5 +1,6 @@
 # Change PyInstaller files permissions
 import sys
+from wsrouter import WSRouter
 from localplatform import (chmod, chown, service_stop, service_start,
                             ON_WINDOWS, get_log_level, get_live_reload, 
                             get_server_port, get_server_host, get_chown_plugin_path,
@@ -8,7 +9,7 @@ from localplatform import (chmod, chown, service_stop, service_start,
 if hasattr(sys, '_MEIPASS'):
     chmod(sys._MEIPASS, 755)
 # Full imports
-from asyncio import new_event_loop, set_event_loop, sleep
+from asyncio import AbstractEventLoop, new_event_loop, set_event_loop, sleep
 from json import dumps, loads
 from logging import DEBUG, INFO, basicConfig, getLogger
 from os import getenv, path
@@ -53,7 +54,7 @@ if get_chown_plugin_path() == True:
     chown_plugin_dir()
 
 class PluginManager:
-    def __init__(self, loop) -> None:
+    def __init__(self, loop: AbstractEventLoop) -> None:
         self.loop = loop
         self.web_app = Application()
         self.web_app.middlewares.append(csrf_middleware)
@@ -64,7 +65,8 @@ class PluginManager:
                 allow_credentials=True
             )
         })
-        self.plugin_loader = Loader(self.web_app, plugin_path, self.loop, get_live_reload())
+        self.ws = WSRouter(self.loop, self.web_app)
+        self.plugin_loader = Loader(self.web_app, self.ws, plugin_path, self.loop, get_live_reload())
         self.settings = SettingsManager("loader", path.join(get_privileged_path(), "settings"))
         self.plugin_browser = PluginBrowser(plugin_path, self.plugin_loader.plugins, self.plugin_loader, self.settings) 
         self.utilities = Utilities(self)

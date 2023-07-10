@@ -53,6 +53,10 @@ class Utilities:
                 web.post("/methods/{method_name}", self._handle_server_method_call)
             ])
 
+            context.ws.add_route("utilities/ping", self.ping)
+            context.ws.add_route("utilities/settings/get", self.get_setting)
+            context.ws.add_route("utilities/settings/set", self.set_setting)
+
     async def _handle_server_method_call(self, request):
         method_name = request.match_info["method_name"]
         try:

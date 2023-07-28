@@ -18,7 +18,7 @@ import { installFromURL } from '../../../../store';
 import { useSetting } from '../../../../utils/hooks/useSetting';
 import { getSetting } from '../../../../utils/settings';
 import { FileSelectionType } from '../../../modals/filepicker';
-import RemoteDebuggingSettings from '../general/RemoteDebugging';
+import RemoteDebuggingSettings from './RemoteDebugging';
 
 const logger = new Logger('DeveloperIndex');
 
